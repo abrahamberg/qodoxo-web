@@ -125,7 +125,9 @@ function App() {
     <div className="page-shell">
       <header className="topbar">
         <a className="brand" href="#home" aria-label="Qodoxo AB home">
-          <span className="brand-mark">Q</span>
+          <span className="brand-mark" aria-hidden="true">
+            <BrandMark />
+          </span>
           <span className="brand-text">
             <strong>Qodoxo AB</strong>
             <span>Platform engineering and AI consulting</span>
@@ -526,6 +528,33 @@ function ArrowUpRightIcon() {
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M7 17 17 7" />
       <path d="M8 7h9v9" />
+    </svg>
+  )
+}
+
+function BrandMark() {
+  return (
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <defs>
+        <linearGradient id="brand-shell" x1="10" y1="8" x2="56" y2="58" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#6C86FF" />
+          <stop offset="0.52" stopColor="#7B67FF" />
+          <stop offset="1" stopColor="#47D9FF" />
+        </linearGradient>
+        <linearGradient id="brand-core" x1="18" y1="15" x2="44" y2="48" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#F9FBFF" />
+          <stop offset="1" stopColor="#D5DEFF" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M32 4.5 52.8 16.5v23L32 59.5 11.2 39.5v-23L32 4.5Z"
+        fill="url(#brand-shell)"
+      />
+      <path
+        d="M31.9 15c7.9 0 14 4.1 16.7 11.1l-6.8 2.2c-1.6-3.9-5-6-9.8-6-6.4 0-10.9 4.4-10.9 10.7 0 6.5 4.4 10.8 11.1 10.8 4.5 0 8-1.8 10.7-5.5H31.5v-6.1h20.1c0 9-7.4 18-19.7 18-11.1 0-19.1-7.6-19.1-17.9S20.8 15 31.9 15Z"
+        fill="url(#brand-core)"
+      />
+      <path d="m43.7 43.8 7.3 7.2" stroke="#F9FBFF" strokeWidth="4" strokeLinecap="round" />
     </svg>
   )
 }
