@@ -547,7 +547,7 @@ function BrandMark() {
         </linearGradient>
       </defs>
       <path
-        d="M32 4.5 52.8 16.5v23L32 59.5 11.2 39.5v-23L32 4.5Z"
+        d="M32 6 50.2 16.5v21L32 48 13.8 37.5v-21L32 6Z"
         fill="url(#brand-shell)"
       />
       <path
