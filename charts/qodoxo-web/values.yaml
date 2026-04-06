@@ -73,7 +73,7 @@ probes:
     periodSeconds: 20
 
 volumes:
-  - name: nginx-cache
+  - name: nginx-lib
     emptyDir: {}
   - name: nginx-run
     emptyDir: {}
@@ -81,7 +81,7 @@ volumes:
     emptyDir: {}
 
 volumeMounts:
-  - name: nginx-cache
+  - name: nginx-lib
     mountPath: /var/lib/nginx
   - name: nginx-run
     mountPath: /var/run
