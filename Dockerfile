@@ -14,5 +14,3 @@ COPY nginx/default.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist ./
 
 EXPOSE 8080
-
-ENTRYPOINT ["/usr/sbin/nginx", "-g", "daemon off;"]

@@ -9,7 +9,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: abrahamberg/qodoxo-web
-  K8S_NAMESPACE: ns-qodoxo-web
+  K8S_NAMESPACE: qodoxo-web
   HELM_RELEASE: qodoxo-web
 
 permissions:

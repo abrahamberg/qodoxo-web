@@ -8,13 +8,6 @@ metadata:
     {{- include "qodoxo-web.labels" . | nindent 4 }}
   annotations:
     {{- toYaml .Values.ingress.annotations | nindent 4 }}
-    {{- if .Values.ingress.canonicalHost }}
-    nginx.ingress.kubernetes.io/from-to-www-redirect: "true"
-    nginx.ingress.kubernetes.io/server-snippet: |
-      if ($host != "{{ .Values.ingress.canonicalHost }}") {
-        return 308 https://{{ .Values.ingress.canonicalHost }}$request_uri;
-      }
-    {{- end }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}
   rules:

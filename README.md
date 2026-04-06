@@ -8,7 +8,7 @@ Marketing website for Qodoxo AB.
 - Vite
 - Docker multi-stage build
 - Chainguard Nginx runtime image
-- Helm chart for `ns-qodoxo-web`
+- Helm chart for `qodoxo-web`
 - GitHub Actions deployment workflow
 
 ## Local development
@@ -32,7 +32,7 @@ The Docker image is built from `Dockerfile` and serves the Vite build through Ng
 
 Helm chart lives in `charts/qodoxo-web` and targets:
 
-- namespace: `ns-qodoxo-web`
+- namespace: `qodoxo-web`
 - Helm release: `qodoxo-web`
 - ingress hosts:
   - `qodoxo.com`
