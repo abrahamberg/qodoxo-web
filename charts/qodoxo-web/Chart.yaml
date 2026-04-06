@@ -1,0 +1,6 @@
+apiVersion: v2
+name: qodoxo-web
+description: Marketing site for Qodoxo AB
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

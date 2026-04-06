@@ -1,0 +1,90 @@
+replicaCount: 2
+
+image:
+  repository: ghcr.io/abrahamberg/qodoxo-web
+  tag: latest
+  pullPolicy: Always
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  canonicalHost: qodoxo.com
+  hosts:
+    - host: qodoxo.com
+      paths:
+        - path: /
+          pathType: Prefix
+    - host: www.qodoxo.com
+      paths:
+        - path: /
+          pathType: Prefix
+    - host: zenithsystem.com
+      paths:
+        - path: /
+          pathType: Prefix
+    - host: www.zenithsystem.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: qodoxo-tls
+      hosts:
+        - qodoxo.com
+        - www.qodoxo.com
+        - zenithsystem.com
+        - www.zenithsystem.com
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 250m
+    memory: 128Mi
+
+securityContext:
+  pod:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  container:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - ALL
+
+probes:
+  readiness:
+    path: /healthz
+    initialDelaySeconds: 3
+    periodSeconds: 10
+  liveness:
+    path: /healthz
+    initialDelaySeconds: 10
+    periodSeconds: 20
+
+volumes:
+  - name: nginx-cache
+    emptyDir: {}
+  - name: nginx-run
+    emptyDir: {}
+  - name: nginx-tmp
+    emptyDir: {}
+
+volumeMounts:
+  - name: nginx-cache
+    mountPath: /var/lib/nginx
+  - name: nginx-run
+    mountPath: /var/run
+  - name: nginx-tmp
+    mountPath: /tmp

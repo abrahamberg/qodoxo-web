@@ -1,0 +1,105 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: abrahamberg/qodoxo-web
+  K8S_NAMESPACE: ns-qodoxo-web
+  HELM_RELEASE: qodoxo-web
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest
+            type=sha
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Install Bitwarden CLI
+        if: ${{ secrets.KUBE_CONFIG_HOME == '' }}
+        uses: bitwarden/cli-action@v1
+        with:
+          version: 2024.12.0
+
+      - name: Get kubeconfig from Bitwarden
+        if: ${{ secrets.KUBE_CONFIG_HOME == '' }}
+        env:
+          BW_CLIENTID: ${{ secrets.BW_CLIENTID }}
+          BW_CLIENTSECRET: ${{ secrets.BW_CLIENTSECRET }}
+          BW_PASSWORD: ${{ secrets.BW_PASSWORD }}
+        run: |
+          bw login --apikey
+          export BW_SESSION="$(bw unlock --passwordenv BW_PASSWORD --raw)"
+          bw get notes "kube config Home" > "$RUNNER_TEMP/kubeconfig"
+          chmod 600 "$RUNNER_TEMP/kubeconfig"
+
+      - name: Write kubeconfig from GitHub secret
+        if: ${{ secrets.KUBE_CONFIG_HOME != '' }}
+        run: |
+          printf '%s' '${{ secrets.KUBE_CONFIG_HOME }}' > "$RUNNER_TEMP/kubeconfig"
+          chmod 600 "$RUNNER_TEMP/kubeconfig"
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Deploy with Helm
+        env:
+          KUBECONFIG: ${{ runner.temp }}/kubeconfig
+        run: |
+          kubectl get namespace "${{ env.K8S_NAMESPACE }}" >/dev/null 2>&1 || kubectl create namespace "${{ env.K8S_NAMESPACE }}"
+          helm upgrade --install "${{ env.HELM_RELEASE }}" ./charts/qodoxo-web \
+            --namespace "${{ env.K8S_NAMESPACE }}" \
+            --create-namespace \
+            --set image.repository="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}" \
+            --set image.tag="sha-${{ github.sha }}" \
+            --atomic \
+            --wait \
+            --timeout 5m

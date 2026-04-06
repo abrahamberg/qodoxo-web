@@ -1,0 +1,6 @@
+Qodoxo web release deployed.
+
+Ingress hosts:
+{{- range .Values.ingress.hosts }}
+- https://{{ .host }}
+{{- end }}
