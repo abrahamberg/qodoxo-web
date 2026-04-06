@@ -24,6 +24,15 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Decide kubeconfig source
+        id: kubeconfig-source
+        run: |
+          if [ -n "${{ secrets.KUBE_CONFIG_HOME }}" ]; then
+            echo "use_github_secret=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "use_github_secret=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -61,13 +70,13 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Install Bitwarden CLI
-        if: ${{ secrets.KUBE_CONFIG_HOME == '' }}
+        if: ${{ steps.kubeconfig-source.outputs.use_github_secret != 'true' }}
         uses: bitwarden/cli-action@v1
         with:
           version: 2024.12.0
 
       - name: Get kubeconfig from Bitwarden
-        if: ${{ secrets.KUBE_CONFIG_HOME == '' }}
+        if: ${{ steps.kubeconfig-source.outputs.use_github_secret != 'true' }}
         env:
           BW_CLIENTID: ${{ secrets.BW_CLIENTID }}
           BW_CLIENTSECRET: ${{ secrets.BW_CLIENTSECRET }}
@@ -79,7 +88,7 @@ jobs:
           chmod 600 "$RUNNER_TEMP/kubeconfig"
 
       - name: Write kubeconfig from GitHub secret
-        if: ${{ secrets.KUBE_CONFIG_HOME != '' }}
+        if: ${{ steps.kubeconfig-source.outputs.use_github_secret == 'true' }}
         run: |
           printf '%s' '${{ secrets.KUBE_CONFIG_HOME }}' > "$RUNNER_TEMP/kubeconfig"
           chmod 600 "$RUNNER_TEMP/kubeconfig"
